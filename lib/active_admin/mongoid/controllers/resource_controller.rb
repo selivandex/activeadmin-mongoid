@@ -3,6 +3,17 @@ require 'active_admin/engine'
 ActiveAdmin::Engine.module_eval do
   initializer 'active_admin.mongoid.resource_controller' do
     class ActiveAdmin::ResourceController
+      def build_resource
+        get_resource_ivar || begin
+          resource = build_new_resource
+          resource = apply_decorations(resource)
+          run_build_callbacks resource
+          authorize_resource! resource
+
+          set_resource_ivar resource
+        end
+      end
+
       def build_new_resource
         scoped_collection.send(
           method_for_build,
